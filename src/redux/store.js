@@ -1,10 +1,12 @@
 import todosReducer from './todosSlice'
 import filtersReducer from './filtersSlice'
-import { combineReducers, compose, createStore } from 'redux'
+import { applyMiddleware, combineReducers, compose, createStore } from 'redux'
 import {
   includeMeaningOfLife,
   sayHiOnDispatch,
 } from '../exampleAddons/enhancers'
+import { print1, print2, print3 } from '../exampleAddons/middleware'
+import { composeWithDevTools } from 'redux-devtools-extension'
 
 // hand-made rootReduser
 function rootReducerCustom(state = {}, action) {
@@ -25,8 +27,20 @@ const rootReducer = combineReducers({
   filters: filtersReducer,
 })
 
+// using compose to put together all enhansers to a single one
 const composedEnchansers = compose(sayHiOnDispatch, includeMeaningOfLife)
+// applyMilleware - unique enhancer to collect all middlewares
+const middleware = applyMiddleware(print1, print2, print3)
 
-const store = createStore(rootReducer, composedEnchansers)
+// composeWithDevTools - special version of compose from redux-devtools-extension
+// which ensures that devTools chrome extension will work.
+const composedEnhancer = composeWithDevTools(
+  // EXAMPLE: Add whatever middleware you actually want to use here
+  applyMiddleware(print1, print2, print3),
+  // other store enhancers if any
+  sayHiOnDispatch
+)
+
+const store = createStore(rootReducer, composedEnhancer)
 
 export default store
